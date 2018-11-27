@@ -1,0 +1,111 @@
+UNICODE CHECK
+
+TCODE - UCCHECK
+
+ALL PROG UNICODE CHECK TO BE ACTIVE
+Check unicode in attribute of se38.
+
+1. Both the structure should be same means internal table to field was allowed in 4.6b 
+   but internal table field to structure field is allowed in ECC 6.0.
+ 
+Earlier Version - 4.6b it was
+
+IF ITAB_TRUCK_STATUS CS RSDXX-FINDSTR
+        OR ITAB_TRUCK_STATUS-REPORT_NO CP RSDXX-FINDSTR
+        OR ITAB_TRUCK_STATUS-TRUCK_NO CS RSDXX-FINDSTR
+        OR ITAB_TRUCK_STATUS-TRUCK_NO CP RSDXX-FINDSTR.
+
+
+ECC 6.0
+
+IF ITAB_TRUCK_STATUS-REPORT_NO CS RSDXX-FINDSTR
+        OR ITAB_TRUCK_STATUS-REPORT_NO CP RSDXX-FINDSTR
+        OR ITAB_TRUCK_STATUS-TRUCK_NO CS RSDXX-FINDSTR
+        OR ITAB_TRUCK_STATUS-TRUCK_NO CP RSDXX-FINDSTR.
+
+
+2. like is allowed in 4.6B
+   Type is not allowed in ECC 6.0. But if like statement already exist in ECC 6.0 
+   it will not give error but if u try to make changes it will give error. 
+   In HR Module it was giving error. 
+
+3. In 4.6 B Version type-pools : slis
+         
+   CONSTANTS: CON_CRET TYPE X VALUE '0D',  "OK for non Unicode
+   CON_TAB TYPE X VALUE '09'.   "OK for non Unicode
+
+   In ECC 6.0 ver we write type-pools: abap
+
+ TYPES: ABAP_CHAR1(1) TYPE C,
+       ABAP_CR_LF(2) TYPE C.
+CONSTANTS CON_TAB TYPE ABAP_CHAR1 VALUE %_HORIZONTAL_TAB.
+CONSTANTS CON_CRET TYPE ABAP_CR_LF VALUE %_CR_LF.           "#EC NOTEXT
+
+4. In 4.6B Open dataset fname for output in textmode.
+
+   In ECC 6.0 Open dataset fname for output in textmode encoding UTF-8.  
+
+5. In 4.6B Shift wa_zfx_cancel_hdr_profit_loss RIGHT DELETING TRAILING '-'.
+
+   In ECC 6.0 
+            if wa_zfx-cancel_hdr_profit_loss le 0.
+               wa_zfx-cancel_hdr_profit_loss = wa_zfx-cancel_hdr_profit_loss * -1.
+            endif.
+
+6. In 4.6B version.
+
+   CALL FUNCTION 'SO_DOCUMENT_SEND_API1'
+    EXPORTING
+            DOCUMENT_DATA              = DOC_CHNG
+*         PUT_IN_OUTBOX              = ' '
+           SENDER_ADDRESS             = SENDER
+           SENDER_ADDRESS_TYPE        = ADDRESS_TYPE
+
+  In ECC 6.0 version.
+
+    CALL FUNCTION 'SO_DOCUMENT_SEND_API1'
+    EXPORTING
+            DOCUMENT_DATA              = DOC_CHNG
+*          PUT_IN_OUTBOX              = ' '
+           SENDER_ADDRESS             = SENDER
+           SENDER_ADDRESS_TYPE        = ADDRESS_TYPE
+           commit                     = 'X'.          Add this.
+
+7.  RSTXSCRP for layout set execute this program.
+    Then go to export
+    then go to ECC 6.0 Import Dev 551
+    copy same program testing 570.
+
+8.  Module pool -  First Select Screen then say utilities - upload
+                   and then go to 551 and then say download.
+
+9. Suppose there is structure
+
+   data: begin of itab,
+         one(10) type p,
+         two(10) type p,
+    end of itab.
+
+Then use 'write' statement it will work in 4.6B. 
+   
+But in ECC 6.0 
+
+   data: begin of itab,
+         one(10) type p,
+         two(10) type p,
+    end of itab.
+  
+Convert this to char type data and then use 'write statement'.
+
+
+OBJECT_CHECK_YINVHEAD
+
+*       objecttab-table = yinvhead. " Unicode
+      CALL METHOD cl_abap_container_utilities=>fill_container_c
+        EXPORTING
+          im_value               = YINVHEAD
+        IMPORTING
+          ex_container           = objecttab-table
+        EXCEPTIONS
+          illegal_parameter_type = 1
+          OTHERS                 = 2.
